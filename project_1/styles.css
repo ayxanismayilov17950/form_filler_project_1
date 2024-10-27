@@ -1,0 +1,35 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 10px;
+    width: 300px;
+  }
+  
+  #container {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  h2 {
+    text-align: center;
+  }
+  
+  label, input, button {
+    margin: 5px 0;
+  }
+  
+  button {
+    padding: 5px;
+    cursor: pointer;
+  }
+  
+  #custom-fields {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  #saved-data {
+    margin-top: 10px;
+    padding: 10px;
+    border-top: 1px solid #ddd;
+  }
+  

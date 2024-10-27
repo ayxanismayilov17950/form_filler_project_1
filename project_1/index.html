@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auto Form Filler</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="container">
+    <h2>Auto Form Filler</h2>
+
+
+    <label for="profile-select">Select Profile:</label>
+    <select id="profile-select">
+      <option value="default">Default</option>
+    </select>
+    <button id="add-profile">Add Profile</button>
+
+
+    <h3>Custom Fields</h3>
+    <div id="custom-fields">
+      <input type="text" id="field-name" placeholder="Field Name">
+      <input type="text" id="field-value" placeholder="Field Value">
+      <button id="add-field">Add Field</button>
+    </div>
+
+
+    <div id="saved-data"></div>
+
+    <button id="save-profile">Save Profile</button>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
