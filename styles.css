@@ -1,8 +1,109 @@
-:root {
-    --ada-blue: #336178;
-    --ada-red: #ae485e;
+body
+{
+  background-color: #000328;
+  margin: 0 auto;
 }
 
-body {
-    background-color: var(--ada-blue);
+
+footer {
+  background-color: #ffffff;
+  font-family: "Times New Roman", Times, serif;
+  font-size: 26px;
+  text-align: center;
+  height: 100px;
 }
+
+h1 {
+  color: beige;
+   font-family: "Helvetica", Times, serif;
+   text-align: center;
+  font-size: 32px;
+  font-weight: 300;
+  text-transform: uppercase;
+margin-left: 300px; ;
+margin-right: 300px; ;
+}
+
+div h1{
+  color: beige;
+   font-family: "Helvetica", Times, serif;
+   text-align: center;
+  font-size: 32px;
+  font-weight: 300;
+  text-transform: uppercase;
+margin-left: 300px; ;
+margin-right: 300px; ;
+margin-top: 250px;
+}
+
+li{
+  color: #868693;
+  font-family: 'Varela Round', sans-serif;
+  font-size: 18px;
+  font-weight: 100;
+  margin: 0 auto 20px auto;
+
+}
+
+p {
+  color: #ffffff;
+  font-family: 'Varela Round', sans-serif;
+  font-size: 18px;
+}
+
+.teamIntroduction{
+  color: antiquewhite;
+  box-sizing: border-box;
+  padding: 40px;
+  width: 100%;
+  position: relative;
+  top: 50px;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    background-color:#12122C;
+  }
+  
+  body > li {
+    float: left;
+  }
+  
+  li a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+  }
+  
+  li a:hover:not(.active) {
+    background-color: #111;
+  }
+  .adalogo {
+    position: sticky;
+   top: 0;
+  }
+
+a:link {
+  color: #FF0000;
+}
+
+a:visited {
+  color: white;
+}
+a:hover {
+ color: #005B5E;
+}
+a:active {
+  color: #0000;
+}
+    #info {
+        display: none;
+    }
+    div p {
+      text-align: center;
+    }
