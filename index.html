@@ -4,13 +4,43 @@
     (c)202X by Name Surname 
     Submitted in partial fulfillment of the requirements of the course.
 -->
-<html>
-    <head>
-        <title>Homework 3: How websites work?</title>
-        <link rel="stylesheet" href="styles.css">  
-        <script type="text/javascript" src="scripts.js"></script>      
-    </head>
-    <body>
-        #Homework 3: How websites work?
-    </body>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Web Savants</title>
+  <link rel="stylesheet" href="/static/css/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.0/css/all.min.css"
+    integrity="sha512-9xKTRVabjVeZmc+GUW8GgSmcREDunMM+Dt/GrzchfN8tkwHizc5RP4Ok/MXFFy5rIjJjzhndFScTceq5e6GvVQ=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+
+<body>
+  <header class="header">
+    <div class="hero">
+      <h2 class="hero__title">
+        Web Savants
+      </h2>
+    </div>
+    <nav class="navbar">
+      <ul>
+        <li><a href="./" class="navbar__link">Home</a></li>
+        <li><a href="./team-members.html" class="navbar__link">Team Members</a></li>
+        <li><a href="./web-project.html" class="navbar__link">Web Project</a></li>
+        <li><a href="./hour-of-code.html" class="navbar__link">Hour of Code</a></li>
+        <li><a href="./code-artist.html" class="navbar__link">Code Artist</a></li>
+      </ul>
+      <div class="mode-switcher">
+        <label for="modeSwitcherInput">
+          <div class="mode-switcher__moon"><i class="fa-solid fa-moon"></i></div>
+          <div class="mode-switcher__sun"><i class="fa-solid fa-sun"></i></div>
+        </label>
+        <input type="checkbox" id="modeSwitcherInput" hidden>
+      </div>
+    </nav>
+  </header>
+</body>
+<script type="text/javascript" src="/static/js/scripts.js"></script>
+
 </html>

@@ -1,8 +1,0 @@
-:root {
-    --ada-blue: #336178;
-    --ada-red: #ae485e;
-}
-
-body {
-    background-color: var(--ada-blue);
-}
