@@ -57,7 +57,20 @@ ol {
   font-size: 4rem;
   font-family: "Space Mono", monospace;
   font-weight: bold;
-  text-shadow: -10px -10px 0 var(--accent-color), 10px 10px 0 var(--secondary-color);
+  --shadow-tl-x: -10px;
+  --shadow-tl-y: -10px;
+  --shadow-br-x: 10px;
+  --shadow-br-y: 10px;
+  text-shadow: var(--shadow-tl-x) var(--shadow-tl-y) 0 var(--accent-color), var(--shadow-br-x) var(--shadow-br-y) 0 var(--secondary-color);
+  transition: 0.5s;
+  cursor: pointer;
+}
+.hero__title:hover {
+  transform: scale(1.2);
+  --shadow-tl-x: -5px;
+  --shadow-tl-y: -5px;
+  --shadow-br-x: 5px;
+  --shadow-br-y: 5px;
 }
 
 .navbar {
@@ -65,12 +78,32 @@ ol {
   flex-direction: row;
   justify-content: space-between;
   padding: 2em;
+  box-sizing: content-box;
+}
+.navbar__logo {
+  display: none;
 }
 .navbar > ul {
   display: flex;
   flex-direction: row;
   justify-content: space-around;
   width: 100%;
+}
+.navbar__link {
+  transition: 0.5s;
+  padding: calc(2em - 3px);
+  --bg-color: var(--primary-color);
+  background: linear-gradient(to top, var(--bg-color) 50%, transparent 50%) 100% var(--link-bg-y, 0%)/200% 200% no-repeat;
+  border-bottom: 3px solid transparent;
+}
+.navbar__link--active {
+  --bg-color: var(--accent-color);
+}
+.navbar__link:hover {
+  --link-bg-y: 100%;
+  border-color: var(--bg-color);
+  /* keep this line for smooth transition */
+  transition: 0.5s background;
 }
 
 .mode-switcher {

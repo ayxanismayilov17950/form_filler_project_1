@@ -10,6 +10,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Web Savants</title>
+  <link rel="icon" type="image/x-icon" href="static/img/logo-512.png">
   <link rel="stylesheet" href="static/css/styles.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.0/css/all.min.css"
     integrity="sha512-9xKTRVabjVeZmc+GUW8GgSmcREDunMM+Dt/GrzchfN8tkwHizc5RP4Ok/MXFFy5rIjJjzhndFScTceq5e6GvVQ=="
@@ -24,13 +25,16 @@
       </h2>
     </div>
     <nav class="navbar">
+      <!-- NOTE: This image is showed up when navbar becomes sticky. So don't delete it. -->
+      <img class="navbar__logo" src="static/img/logo.svg">
       <ul>
-        <li><a href="./" class="navbar__link">Home</a></li>
+        <li><a href="./" class="navbar__link navbar__link--active">Home</a></li>
         <li><a href="./team-members.html" class="navbar__link">Team Members</a></li>
         <li><a href="./web-project.html" class="navbar__link">Web Project</a></li>
         <li><a href="./hour-of-code.html" class="navbar__link">Hour of Code</a></li>
         <li><a href="./code-artist.html" class="navbar__link">Code Artist</a></li>
       </ul>
+      <!-- NOTE: light mode is not properly implemented -->
       <div class="mode-switcher">
         <label for="modeSwitcherInput">
           <div class="mode-switcher__moon"><i class="fa-solid fa-moon"></i></div>
