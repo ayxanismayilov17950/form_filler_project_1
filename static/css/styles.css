@@ -121,3 +121,5 @@ ol {
 .mode-switcher:not(.mode-switcher:has(> #modeSwitcherInput:checked)) .mode-switcher__moon {
   display: block;
 }
+
+.footer {
