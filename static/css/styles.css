@@ -64,6 +64,7 @@ ol {
   text-shadow: var(--shadow-tl-x) var(--shadow-tl-y) 0 var(--accent-color), var(--shadow-br-x) var(--shadow-br-y) 0 var(--secondary-color);
   transition: 0.5s;
   cursor: pointer;
+  user-select: none;
 }
 .hero__title:hover {
   transform: scale(1.2);
@@ -77,11 +78,35 @@ ol {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  padding: 2em;
-  box-sizing: content-box;
+  background: var(--tertiary-color);
+  transition: 0.5s;
+  padding: 0 2em;
+}
+.navbar--sticky {
+  position: sticky;
+  top: 0;
 }
 .navbar__logo {
-  display: none;
+  width: 0;
+  /* 2em (padding-top) + 2em - 3px (padding-bottom) + 3px (border-bottom) + 1em (text) */
+  height: calc(5em + 4px);
+  transition: 0.5s;
+  padding-left: 2em;
+  overflow: hidden;
+  max-width: max-content;
+  align-content: center;
+  position: relative;
+  /* width + padding-left */
+  left: -7em;
+  cursor: pointer;
+}
+.navbar__logo > img {
+  height: 3em;
+}
+.navbar__logo--visible {
+  width: 5em;
+  left: 0;
+  transition: left 0.5s, width 0.3s;
 }
 .navbar > ul {
   display: flex;
@@ -90,8 +115,10 @@ ol {
   width: 100%;
 }
 .navbar__link {
+  display: inline-block;
   transition: 0.5s;
-  padding: calc(2em - 3px);
+  padding: 2em;
+  padding-bottom: calc(2em - 3px);
   --bg-color: var(--primary-color);
   background: linear-gradient(to top, var(--bg-color) 50%, transparent 50%) 100% var(--link-bg-y, 0%)/200% 200% no-repeat;
   border-bottom: 3px solid transparent;
@@ -108,7 +135,7 @@ ol {
 
 .mode-switcher {
   flex-basis: 10%;
-  display: flex;
+  display: none;
   justify-content: center;
 }
 .mode-switcher > label > * {
