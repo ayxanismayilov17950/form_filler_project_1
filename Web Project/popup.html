@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Auto Form Filler</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #profileManager {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        #dataFields div, .mapping {
+            margin-bottom: 10px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        #dataFields, #mappingContainer {
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+        input, select {
+            padding: 5px;
+            flex: 1;
+        }
+        button {
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        label {
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Profile Data</h2>
+    <div id="profileManager">
+        <select id="profileSelector"></select>
+        <button id="addProfileButton">Add Profile</button>
+        <button id="deleteProfileButton">Delete Profile</button>
+    </div>
+
+    <h3>Fields for Active Profile</h3>
+    <div id="dataFields">
+        <!-- Extracted and custom data will appear here -->
+    </div>
+    <button id="addFieldButton">Add New Field</button>
+    <button id="saveFieldsButton">Save All Data</button>
+
+    <h3>Map LinkedIn Fields to Form Fields</h3>
+    <div id="mappingContainer">
+        <!-- Existing mappings will appear here dynamically -->
+    </div>
+    <div class="mapping">
+        <label for="linkedinField">LinkedIn Field:</label>
+        <select id="linkedinField">
+            <option value="name">Name</option>
+            <option value="email">Email</option>
+            <option value="phone">Phone</option>
+            <option value="experience">Experience</option>
+            <option value="education">Education</option>
+            <option value="skills">Skills</option>
+        </select>
+        <label for="formField">Form Field:</label>
+        <input type="text" id="formField" placeholder="Enter form field name (e.g., 'Full Name')">
+        <button id="addMapping">Add Mapping</button>
+    </div>
+    <button id="applyMappings">Apply Mappings</button>
+    <input type="checkbox" id="enableMapping" checked>
+    <label for="enableMapping">Enable this mapping</label>
+
+    <script src="popup.js"></script>
+</body>
+</html>
