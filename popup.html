@@ -1,45 +1,126 @@
-<!DOCTYPE html>
+<html>
+<head>
+  <title>Chrome Auto Filler</title>
+  <link rel="stylesheet" href="styling/styles.css">
+</head>
+
+<body>
+  <h1>Chrome Auto Filler</h1>
+  <!-- Profile Selection -->
+  <div class="section">
+    <label for="profile-select">Select Profile:</label>
+    <div class="profile-controls">
+      <select id="profile-select"></select>
+      <button id="new-profile">New</button>
+      <button id="delete-profile">Delete</button>
+    </div>
+  </div>
+
+  <div id="new-profile-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <h3>New Profile</h3>
+      <label for="new-profile-name">Profile Name:</label>
+      <input type="text" id="new-profile-name" placeholder="Enter profile name">
+      <div class="modal-buttons">
+        <button id="save-new-profile">Save</button>
+        <button id="cancel-new-profile">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Data Fields -->
+  <div class="section">
+    <label for="name">Full Name:</label>
+    <input type="text" id="name" placeholder="Full Name">
+
+    <label for="experiences">Experience:</label>
+    <textarea id="experiences" placeholder="Experience"></textarea>
+
+    <label for="education">Education:</label>
+    <textarea id="education" placeholder="Education"></textarea>
+
+    <label for="skills">Skills:</label>
+    <textarea id="skills" placeholder="Skills"></textarea>
+
+    <label for="summary">About:</label>
+    <textarea id="summary" placeholder="About"></textarea>
+  </div>
+
+  <!-- Custom Fields -->
+  <div class="section">
+    <h2>Custom Fields</h2>
+    <div id="custom-fields-container"></div>
+    <button id="add-custom-field">Add Custom Field</button>
+  </div>
+
+  <!-- Action Buttons -->
+  <div id="action-buttons">
+    <button id="save">Save progress</button>
+    <button id="reload">Reload Profile</button>
+    <button id="extract-data">Extract Data from Linkedin</button>
+    <button id="auto-fill">Autofill</button>
+    <button id="export-data">Export</button>
+    <button id="import-data">Import</button>
+    <button id="send-email">Send via Email</button>
+  </div>
+
+  <input type="file" id="file-input" accept=".json" style="display: none;">
+  <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile Manager</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Job Application Tracker</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h2>Profile Data</h2>
-    <div id="profileManager">
-        <select id="profileSelector" name="profileSelector" aria-label="Select Profile"></select>    </select>
-        <button id="addProfileButton">Add Profile</button>
-        <button id="deleteProfileButton">Delete Profile</button>
-    </div>
-    <div id="dataFields">
-        <!-- Extracted and custom data will appear here -->
-    </div>
-    <button id="addFieldButton">Add New Field</button>
-    <button id="saveFieldsButton">Save All Data</button>
+  <div id="dashboard">
+    <h1>Job Application Tracker</h1>
+    <table id="application-table">
+      <thead>
+        <tr>
+          <th>Company</th>
+          <th>Job Title</th>
+          <th>Date Applied</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Dynamic Rows -->
+      </tbody>
+    </table>
 
-    <h3>Map LinkedIn Fields to Form Fields</h3>
-    <div id="mappingContainer">
-        <div class="mapping">
-            <label for="linkedinField">LinkedIn Field:</label>
-            <select id="linkedinField">
-                <option value="name">Name</option>
-                <option value="email">Email</option>
-                <option value="phone">Phone</option>
-                <option value="experience">Experience</option>
-                <option value="education">Education</option>
-                <option value="skills">Skills</option>
-            </select>
-            <label for="formField">Form Field:</label>
-            <input type="text" id="formField" placeholder="Enter form field name (e.g., 'Full Name')">
-            <button class="saveMapping">Save Mapping</button>
-        </div>
+    <button id="add-application-btn">Add Application</button>
+  </div>
+  <div id="application-modal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2>Add/Edit Application</h2>
+      <form id="application-form">
+        <label for="company">Company:</label>
+        <input type="text" id="company" name="company" required>
+
+        <label for="job-title">Job Title:</label>
+        <input type="text" id="job-title" name="job-title" required>
+
+        <label for="date-applied">Date Applied:</label>
+        <input type="date" id="date-applied" name="date-applied" required>
+
+        <label for="status">Status:</label>
+        <select id="status" name="status">
+          <option value="Pending">Pending</option>
+          <option value="In-Progress">In-Progress</option>
+          <option value="Accepted">Accepted</option>
+          <option value="Rejected">Rejected</option>
+        </select>
+
+        <button type="submit">Save</button>
+      </form>
     </div>
-    <button id="applyMappings">Apply Mappings</button>
+  </div>
 
-    <input type="checkbox" id="enableMapping" checked>
-    <label for="enableMapping">Enable this mapping</label>
-
-    <script src="popup.js"></script>
+  <script src="dashboard.js"></script>
+  <script src="popup.js"></script>
 </body>
 </html>

@@ -1,19 +1,23 @@
 {
   "manifest_version": 3,
-  "name": "My LinkedIn Data Extractor Extension",
+  "name": "Auto Filler with Job Tracker",
   "version": "1.0",
-  "description": "A Chrome extension to extract data from LinkedIn profiles and store it locally.",
-  "permissions": ["storage"],
-
-  "host_permissions": [
-    "https://www.linkedin.com/*" 
-  ],
-
+  "description": "An intelligent auto form filler and job application tracking dashboard.",
+  "permissions": ["storage", "activeTab", "tabs", "scripting"],
   "action": {
     "default_popup": "popup.html"
   },
-
-  "background": {
-    "service_worker": "popup.js"
-  }
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["dashboard.html"],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }
