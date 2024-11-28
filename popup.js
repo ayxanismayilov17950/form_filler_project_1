@@ -11,10 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadProfiles();
 
   // Event listeners for buttons and inputs
-  document.getElementById('add-custom-field').addEventListener('click', () => {
-    addCustomField();
-  });
-
+  document.getElementById('add-custom-field').addEventListener('click', addCustomField);
   document.getElementById('profile-select').addEventListener('change', () => {
     selectedProfileIndex = parseInt(document.getElementById('profile-select').value, 10);
     loadSelectedProfileData();
@@ -23,7 +20,6 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('new-profile').addEventListener('click', createNewProfile);
   document.getElementById('delete-profile').addEventListener('click', deleteProfile);
   document.getElementById('save').addEventListener('click', saveProfileData);
-
   document.getElementById('reload').addEventListener('click', loadProfiles);
   document.getElementById('auto-fill').addEventListener('click', autoFill);
   document.getElementById('export-data').addEventListener('click', exportData);
@@ -31,8 +27,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('file-input').click();
   });
   document.getElementById('file-input').addEventListener('change', importData);
-  document.getElementById('extract-data').addEventListener('click', extractData); // Event listener
+  document.getElementById('extract-data').addEventListener('click', extractData);
   document.getElementById('send-email').addEventListener('click', sendEmail);
+});
 
 // Function to add a custom field to the popup
 function addCustomField(key = '', value = '') {
@@ -66,20 +63,10 @@ function addCustomField(key = '', value = '') {
   customFields.push(div);
 }
 
-// Function to load profiles from storage
 function loadProfiles() {
   chrome.storage.local.get(['profiles'], (result) => {
     profiles = result.profiles || [];
 
-    // If no profiles exist, create a default one
-    if (profiles.length === 0) {
-      profiles.push({
-        profileName: 'Default Profile',
-        data: {}
-      });
-    }
-
-    // Ensure the selectedProfileIndex is within bounds
     if (selectedProfileIndex >= profiles.length) {
       selectedProfileIndex = 0;
     }
@@ -89,7 +76,6 @@ function loadProfiles() {
   });
 }
 
-// Function to populate the profile dropdown
 function populateProfileDropdown() {
   const profileSelect = document.getElementById('profile-select');
   profileSelect.innerHTML = '';
@@ -109,7 +95,6 @@ function loadSelectedProfileData() {
     document.getElementById('name').value = data.name || '';
     document.getElementById('experiences').value = formatExperiences(data.experiences) || '';
     document.getElementById('education').value = formatEducation(data.education) || '';
-    document.getElementById('skills').value = formatSkills(data.skills) || '';
     document.getElementById('summary').value = data.summary || '';
 
     // Clear existing custom fields
@@ -132,49 +117,32 @@ function formatExperiences(experiences) {
 }
 
 function formatEducation(education) {
-  if (!Array.isArray(education)) {
-    console.error("Invalid education data:", education);
-    return '';
-  }
-
-  return education.map((edu, index) => {
-    console.log(`Processing education entry [${index}]:`, edu);
-
-    const university = edu.university || 'Unknown University';
-    const degreeMajor = edu.degreeMajor || 'Degree/Major not specified';
-    const duration = edu.duration ? `Duration: ${edu.duration}` : 'Duration not specified';
-    const grade = edu.grade ? `Grade: ${edu.grade}` : 'Grade not specified';
-    const activities = edu.activities ? `Activities: ${edu.activities}` : 'Activities not specified';
-
-    const formatted = `${university}\n${degreeMajor}\n${duration}\n${grade}\n${activities}`;
-    console.log(`Formatted education entry [${index}]:`, formatted);
-
-    return formatted;
-  }).join('\n\n'); // Add a blank line between entries
+  if (!Array.isArray(education)) return '';
+  return education
+    .filter(edu => edu.university || edu.degreeMajor)
+    .map(edu => {
+      const details = [
+        edu.university,
+        edu.degreeMajor,
+        edu.duration && `Duration: ${edu.duration}`,
+        edu.grade && `Grade: ${edu.grade}`,
+        edu.activities && `Activities: ${edu.activities}`
+      ].filter(Boolean).join('\n');
+      return details;
+    }).join('\n\n'); 
 }
 
-
-function formatSkills(skills) {
-  if (!Array.isArray(skills)) return '';
-  return skills.join(', ');
-}
-
-// Function to create a new profile
 function createNewProfile() {
-  // Get modal-related elements
   const newProfileModal = document.getElementById('new-profile-modal');
   const saveNewProfileButton = document.getElementById('save-new-profile');
   const cancelNewProfileButton = document.getElementById('cancel-new-profile');
   const newProfileNameInput = document.getElementById('new-profile-name');
 
-  // Show modal when "New Profile" button is clicked
   newProfileModal.style.display = 'flex';
 
-  // Event listener for saving the new profile
   const saveProfile = () => {
     const profileName = newProfileNameInput.value.trim();
     if (profileName) {
-      // Add the new profile logic here
       profiles.push({
         profileName: profileName,
         data: {}
@@ -226,26 +194,19 @@ function deleteProfile() {
   }
 }
 
-// Function to save the current profile data
 function saveProfileData() {
   const name = document.getElementById('name').value.trim();
   const experiencesInput = document.getElementById('experiences').value.trim();
   const educationInput = document.getElementById('education').value.trim();
-  const skillsInput = document.getElementById('skills').value.trim();
   const summary = document.getElementById('summary').value.trim();
 
-  // Process experiences and education into structured arrays
   const experiencesArray = parseTextToArray(experiencesInput, ' at ');
   const educationArray = parseTextToArray(educationInput, ' - ');
-
-  // Process skills into an array
-  const skillsArray = skillsInput.split(',').map(skill => skill.trim()).filter(skill => skill);
 
   const data = {
     name: name || '',
     experiences: experiencesArray,
     education: educationArray,
-    skills: skillsArray,
     summary: summary || '',
     customFields: customFields.map(div => {
       const inputs = div.getElementsByTagName('input');
@@ -258,22 +219,19 @@ function saveProfileData() {
 
   profiles[selectedProfileIndex].data = data;
 
-  // Save profiles array to chrome.storage.local
   chrome.storage.local.set({ profiles: profiles }, () => {
-    // Display a success message
     showMessage('Profile saved successfully.');
   });
 }
 
-// Helper function to parse text input into an array of objects
 function parseTextToArray(input, delimiter) {
   if (!input) return [];
   return input.split('\n').map(line => {
     const [part1, part2] = line.split(delimiter);
     if (delimiter === ' at ') {
-      return { jobTitle: part1 ? part1.trim() : '', company: part2 ? part2.trim() : '' };
+      return { jobTitle: part1?.trim() || '', company: part2?.trim() || '' };
     } else if (delimiter === ' - ') {
-      return { university: part1 ? part1.trim() : '', major: part2 ? part2.trim() : '' };
+      return { university: part1?.trim() || '', degreeMajor: part2?.trim() || '' };
     }
     return {};
   }).filter(item => Object.values(item).some(value => value));
@@ -396,7 +354,7 @@ function importData(event) {
 
 // Function to extract data from the current page
 function extractData() {
-  const confirmExtract = confirm('Ensure you are on the LinkedIn profile page you want to extract data from. Proceed?');
+  const confirmExtract = confirm('Please Enter Your LinkedIn page');
   if (!confirmExtract) return;
 
   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
@@ -476,26 +434,10 @@ function populateDataFields(data) {
       if (edu.degreeMajor) {
         eduStr += `\n ${edu.degreeMajor}`;
       }
-      // if (edu.duration) {
-      //   eduStr += `\n ${edu.duration}`;
-      // }
-      // if (edu.grade) {
-      //   eduStr += `\nGrade: ${edu.grade}`;
-      // }
-      // if (edu.activities) {
-      //   eduStr += `\nActivities: ${edu.activities}`;
-      // }
       return eduStr.trim(); // Trim any trailing whitespace
     }).join('\n\n'); // Add a blank line between entries
   }
   document.getElementById('education').value = educationText;
-
-  // Format skills array into a string
-  let skillsText = '';
-  if (data.skills && data.skills.length > 0) {
-    skillsText = data.skills.join(', ');
-  }
-  document.getElementById('skills').value = skillsText;
 
   document.getElementById('custom-fields-container').innerHTML = '';
   customFields = [];
@@ -534,8 +476,6 @@ function sendEmail() {
     const mailtoLink = `mailto:?subject=${subject}&body=${body}`;
     window.location.href = mailtoLink;
 
-    // Revoke the Blob URL after a short delay
     setTimeout(() => URL.revokeObjectURL(fileUrl), 1000);
   })
 }
-})

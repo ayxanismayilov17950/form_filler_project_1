@@ -1,187 +1,94 @@
 console.log('Content script loaded.');
 
+// Listen for messages from the extension
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-  console.log('Content script received a message:', request);
+  console.log('Received request:', request);
 
   if (request.action === 'extractData') {
     console.log('Starting data extraction...');
     try {
-  
+      // Extract Name
       const nameElement = document.querySelector('h1.inline.t-24.v-align-middle.break-words');
       const name = nameElement ? nameElement.innerText.trim() : null;
       console.log('Extracted Name:', name);
 
-  
-      let experiences = [];
+      // Extract Experiences
+      const experiences = [];
       const experienceContainer = document.querySelector('#experience');
-
-      
       if (experienceContainer) {
-       
         const siblingDiv = experienceContainer.nextElementSibling?.nextElementSibling;
-
         if (siblingDiv) {
-          
           const experienceItems = siblingDiv.querySelectorAll('li.artdeco-list__item');
-
           experienceItems.forEach((item) => {
-            const jobTitleElement = item.querySelector('span[aria-hidden="true"]');
-            const jobTitle = jobTitleElement ? jobTitleElement.textContent.trim() : null;
-
-            const companyElement = item.querySelector('span.t-14.t-normal span[aria-hidden="true"]');
-            const company = companyElement ? companyElement.textContent.trim() : null;
-
-            if (jobTitle || company) {
-              experiences.push({ jobTitle, company });
-            }
+            const jobTitle = item.querySelector('span[aria-hidden="true"]')?.textContent.trim() || null;
+            const company = item.querySelector('span.t-14.t-normal span[aria-hidden="true"]')?.textContent.trim() || null;
+            if (jobTitle || company) experiences.push({ jobTitle, company });
           });
-
-          console.log('Extracted Experiences:', experiences);
-        } else {
-          console.log('Sibling div containing experience data not found.');
         }
-      } else {
-        console.log('Experience container with ID "experience" not found.');
       }
+      console.log('Extracted Experiences:', experiences);
 
-
-
+      // Extract Summary
       let summary = '';
-      try {
-        
-        const aboutSection = document.querySelector('#about');
-      
-        if (aboutSection) {
-          
-          const secondSibling = aboutSection.nextElementSibling?.nextElementSibling;
-      
-          if (secondSibling) {
-        
-            const aboutSpan = secondSibling.querySelector(
-              'div.inline-show-more-text--is-collapsed span[aria-hidden="true"]'
-            );
-      
-            if (aboutSpan) {
-              summary = aboutSpan.textContent.trim();
-              console.log('Extracted About Text:', summary);
-            } else {
-              console.error('About text span not found.');
-            }
-          } else {
-            console.error('Second sibling under #about not found.');
-          }
-        } else {
-          console.error('Element with id="about" not found.');
+      const aboutSection = document.querySelector('#about');
+      if (aboutSection) {
+        const secondSibling = aboutSection.nextElementSibling?.nextElementSibling;
+        if (secondSibling) {
+          summary = secondSibling.querySelector('div.inline-show-more-text--is-collapsed span[aria-hidden="true"]')?.textContent.trim() || '';
         }
-      } catch (error) {
-        console.error('Error extracting about text:', error);
       }
-      
+      console.log('Extracted Summary:', summary);
 
-      let education = [];
+      // Extract Education
+      const education = [];
       const educationContainer = document.querySelector('#education');
-
       if (educationContainer) {
-        
         const siblingDiv = educationContainer.nextElementSibling?.nextElementSibling;
         if (siblingDiv) {
-       
           const educationItems = siblingDiv.querySelectorAll('li.artdeco-list__item');
-
           educationItems.forEach((item) => {
-            
-            const universityElement = item.querySelector(
-              'div.display-flex.align-items-center.mr1.hoverable-link-text.t-bold span[aria-hidden="true"]'
-            );
-            const university = universityElement ? universityElement.textContent.trim() : null;
-
-            const degreeMajorElement = item.querySelector(
-              'span.t-14.t-normal span[aria-hidden="true"]'
-            );
-            const degreeMajor = degreeMajorElement ? degreeMajorElement.textContent.trim() : null;
-
-          
-            const durationElement = item.querySelector(
-              'span.t-14.t-normal.t-black--light span[aria-hidden="true"]'
-            );
-            const duration = durationElement ? durationElement.textContent.trim() : null;
-
-            const gradeElement = item.querySelector(
-              'div.inline-show-more-text span[aria-hidden="true"]'
-            );
-            const grade = gradeElement && gradeElement.textContent.includes('Grade')
-              ? gradeElement.textContent.trim()
-              : null;
-
-
-            const activitiesElement = item.querySelector(
-              'div.inline-show-more-text span[aria-hidden="true"]'
-            );
-            const activities = activitiesElement && activitiesElement.textContent.includes('Activities')
-              ? activitiesElement.textContent.trim()
-              : null;
-
-        
-            if (university || degreeMajor || duration || grade || activities) {
-              education.push({
-                university,
-                degreeMajor,
-                duration,
-                grade,
-                activities,
-              });
+            const university = item.querySelector('div.display-flex.align-items-center span[aria-hidden="true"]')?.textContent.trim() || null;
+            const degreeMajor = item.querySelector('span.t-14.t-normal span[aria-hidden="true"]')?.textContent.trim() || null;
+            const duration = item.querySelector('span.t-14.t-normal.t-black--light span[aria-hidden="true"]')?.textContent.trim() || null;
+            if (university || degreeMajor || duration) {
+              education.push({ university, degreeMajor, duration });
             }
           });
+        }
+      }
+      console.log('Extracted Education:', education);
 
-          console.log('Extracted All Education Details:', education);
-        } else {
-          console.log('Sibling div containing education data not found.');
+      // Extract Skills
+      const skills = [];
+      const skillsSection = document.querySelector('#skills');
+      if (skillsSection) {
+        const secondSibling = skillsSection.nextElementSibling?.nextElementSibling;
+        if (secondSibling) {
+          const skillItems = secondSibling.querySelectorAll('span[aria-hidden="true"]');
+          skillItems.forEach((skillSpan) => {
+            const skillName = skillSpan.textContent.trim();
+            if (skillName) skills.push(skillName);
+          });
         }
-      } else {
-        console.log('Education container with ID "education" not found.');
       }
-      let skills = [];
-      try {
-        
-        const skillsSection = document.querySelector('#skills');
-      
-        if (skillsSection) {
-         
-          const secondSibling = skillsSection.nextElementSibling?.nextElementSibling;
-      
-          if (secondSibling) {
-           
-            const skillNameSpans = secondSibling.querySelectorAll(
-              'div.display-flex.align-items-center.mr1.hoverable-link-text.t-bold span[aria-hidden="true"]'
-            );
-      
-            skillNameSpans.forEach(skillSpan => {
-              const skillName = skillSpan.textContent.trim();
-              if (skillName) {
-                skills.push(skillName);
-              }
-            });
-            console.log('Extracted Skills:', skills);
-          } else {
-            console.error('Second sibling under #skills not found.');
-          }
-        } else {
-          console.error('Element with id="skills" not found.');
-        }
-      } catch (error) {
-        console.error('Error extracting skills:', error);
+      console.log('Extracted Skills:', skills);
+
+      // Extract Licenses & Certifications
+      const certifications = [];
+      const certificationsSection = document.querySelector('section[id="certifications"]');
+      if (certificationsSection) {
+        const certificationItems = certificationsSection.querySelectorAll('li.artdeco-list__item');
+        certificationItems.forEach((item) => {
+          const certificateName = item.querySelector('span[aria-hidden="true"]')?.textContent.trim() || null;
+          const issuer = item.querySelector('span.t-14.t-normal span[aria-hidden="true"]')?.textContent.trim() || null;
+          if (certificateName || issuer) certifications.push({ certificateName, issuer });
+        });
       }
-      
-     
-      const data = {
-        name,
-        experiences, 
-        education,  
-        skills,      
-        summary,     
-      };
+      console.log('Extracted Certifications:', certifications);
+
+      // Prepare and send response data
+      const data = { name, experiences, education, skills, summary, certifications };
       console.log('Data Extraction Complete:', data);
-
       sendResponse({ success: true, data });
     } catch (error) {
       console.error('Error extracting data:', error);
@@ -189,11 +96,12 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     }
 
     return true;
-  } else if (request.action === 'autoFill') {
- 
+  }
+
+  if (request.action === 'autoFill') {
+    console.log('Starting auto-fill process...');
     try {
-      const data = request.data;
-      fillForm(data);
+      fillForm(request.data);
       sendResponse({ status: 'Form filled successfully.' });
     } catch (error) {
       console.error('Error filling form:', error);
@@ -204,74 +112,51 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   }
 });
 
-function getLabelText(input) {
-  let label = input.labels && input.labels[0];
-  if (label) {
-    return label.innerText || label.textContent;
-  } else {
+// Utility Functions
 
-    const id = input.id;
-    if (id) {
-      label = document.querySelector(`label[for='${CSS.escape(id)}']`);
-      return label ? label.innerText || label.textContent : '';
-    }
+function getLabelText(input) {
+  const label = input.labels && input.labels[0];
+  if (label) return label.innerText || label.textContent;
+
+  const id = input.id;
+  if (id) {
+    const labelElement = document.querySelector(`label[for="${CSS.escape(id)}"]`);
+    return labelElement ? labelElement.innerText || labelElement.textContent : '';
   }
+
   return '';
 }
 
-
 function matchesField(fieldNames, ...attributes) {
-  return fieldNames.some(fieldName => {
-    return attributes.some(attr => attr.includes(fieldName.toLowerCase()));
-  });
+  return fieldNames.some((fieldName) => attributes.some((attr) => attr.includes(fieldName.toLowerCase())));
 }
 
-
 function fillForm(data) {
-  const inputs = document.querySelectorAll('input:not([type=hidden]):not([disabled]), textarea, select');
+  const inputs = document.querySelectorAll('input:not([type="hidden"]):not([disabled]), textarea, select');
 
-  inputs.forEach(input => {
+  inputs.forEach((input) => {
     const nameAttr = (input.name || '').toLowerCase();
     const idAttr = (input.id || '').toLowerCase();
     const placeholderAttr = (input.placeholder || '').toLowerCase();
     const labelText = (getLabelText(input) || '').toLowerCase();
 
-   
-    if (data.name && matchesField(['name', 'full name', 'your name'], nameAttr, idAttr, placeholderAttr, labelText)) {
+    if (data.name && matchesField(['name', 'full name'], nameAttr, idAttr, placeholderAttr, labelText)) {
       input.value = data.name;
-      input.dispatchEvent(new Event('input', { bubbles: true }));
-    }
-  
-    else if (data.experiences && data.experiences.length > 0 && matchesField(['experience', 'work experience'], nameAttr, idAttr, placeholderAttr, labelText)) {
-      const experiencesText = data.experiences.map(exp => `${exp.jobTitle || ''} at ${exp.company || ''}`).join('\n');
-      input.value = experiencesText;
-      input.dispatchEvent(new Event('input', { bubbles: true }));
-    }
-   
-    else if (data.education && data.education.length > 0 && matchesField(['education', 'educational background'], nameAttr, idAttr, placeholderAttr, labelText)) {
-      const educationText = data.education.map(edu => `${edu.university || ''} - ${edu.major || ''}`).join('\n');
-      input.value = educationText;
-      input.dispatchEvent(new Event('input', { bubbles: true }));
-    }
-   
-    else if (data.skills && data.skills.length > 0 && matchesField(['skills', 'your skills'], nameAttr, idAttr, placeholderAttr, labelText)) {
+    } else if (data.experiences && data.experiences.length > 0 && matchesField(['experience'], nameAttr, idAttr, placeholderAttr, labelText)) {
+      input.value = data.experiences.map((exp) => `${exp.jobTitle} at ${exp.company}`).join('\n');
+    } else if (data.education && data.education.length > 0 && matchesField(['education'], nameAttr, idAttr, placeholderAttr, labelText)) {
+      input.value = data.education.map((edu) => `${edu.university} (${edu.degreeMajor || ''})`).join('\n');
+    } else if (data.skills && data.skills.length > 0 && matchesField(['skills'], nameAttr, idAttr, placeholderAttr, labelText)) {
       input.value = data.skills.join(', ');
-      input.dispatchEvent(new Event('input', { bubbles: true }));
-    }
-
-    else if (data.summary && matchesField(['summary', 'personal summary', 'about me'], nameAttr, idAttr, placeholderAttr, labelText)) {
+    } else if (data.summary && matchesField(['summary', 'about me'], nameAttr, idAttr, placeholderAttr, labelText)) {
       input.value = data.summary;
-      input.dispatchEvent(new Event('input', { bubbles: true }));
+    } else if (data.certifications && data.certifications.length > 0 && matchesField(['certifications', 'licenses'], nameAttr, idAttr, placeholderAttr, labelText)) {
+      input.value = data.certifications.map((cert) => `${cert.certificateName} by ${cert.issuer}`).join('\n');
     }
 
-    else if (data.customFields && Array.isArray(data.customFields)) {
-      data.customFields.forEach(field => {
-        const key = field.key.toLowerCase();
-        if (key && field.value && matchesField([key], nameAttr, idAttr, placeholderAttr, labelText)) {
-          input.value = field.value;
-          input.dispatchEvent(new Event('input', { bubbles: true }));
-        }
-      });
-    }
+    // Trigger change event to ensure the input is recognized
+    input.dispatchEvent(new Event('input', { bubbles: true }));
   });
+
+  console.log('Form filled successfully.');
 }

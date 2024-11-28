@@ -6,7 +6,6 @@
 
 <body>
   <h1>Chrome Auto Filler</h1>
-  <!-- Profile Selection -->
   <div class="section">
     <label for="profile-select">Select Profile:</label>
     <div class="profile-controls">
@@ -28,19 +27,15 @@
     </div>
   </div>
 
-  <!-- Data Fields -->
   <div class="section">
     <label for="name">Full Name:</label>
-    <input type="text" id="name" placeholder="Full Name">
+    <textarea id="name" placeholder="Full Name"></textarea>
 
     <label for="experiences">Experience:</label>
     <textarea id="experiences" placeholder="Experience"></textarea>
 
     <label for="education">Education:</label>
     <textarea id="education" placeholder="Education"></textarea>
-
-    <label for="skills">Skills:</label>
-    <textarea id="skills" placeholder="Skills"></textarea>
 
     <label for="summary">About:</label>
     <textarea id="summary" placeholder="About"></textarea>
@@ -70,12 +65,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Job Application Tracker</title>
+  <title>Dashboard</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div id="dashboard">
-    <h1>Job Application Tracker</h1>
+    <h1>Dashboard</h1>
     <table id="application-table">
       <thead>
         <tr>
@@ -87,13 +82,12 @@
         </tr>
       </thead>
       <tbody>
-        <!-- Dynamic Rows -->
       </tbody>
     </table>
 
     <button id="add-application-btn">Add Application</button>
   </div>
-  <div id="application-modal" class="modal">
+  <div id="application-modal" class="hidden">
     <div class="modal-content">
       <span class="close">&times;</span>
       <h2>Add/Edit Application</h2>

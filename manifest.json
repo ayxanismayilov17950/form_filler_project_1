@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Auto Filler with Job Tracker",
+  "name": "Auto Form Filler",
   "version": "1.0",
-  "description": "An intelligent auto form filler and job application tracking dashboard.",
+  "description": "auto form filler with linkedin",
   "permissions": ["storage", "activeTab", "tabs", "scripting"],
   "action": {
     "default_popup": "popup.html"
