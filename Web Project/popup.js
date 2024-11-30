@@ -1,231 +1,481 @@
-let currentProfile = null;
-const DEFAULT_PROFILE = "Default";
+// popup.js
 
+let profiles = [];
+let selectedProfileIndex = 0;
+
+// Initialize an array to hold custom fields
+let customFields = [];
+
+// Load profiles when the popup is opened
 document.addEventListener('DOMContentLoaded', () => {
-    loadProfiles();
-    loadMappings();
+  loadProfiles();
+
+  // Event listeners for buttons and inputs
+  document.getElementById('add-custom-field').addEventListener('click', addCustomField);
+  document.getElementById('profile-select').addEventListener('change', () => {
+    selectedProfileIndex = parseInt(document.getElementById('profile-select').value, 10);
+    loadSelectedProfileData();
+  });
+
+  document.getElementById('new-profile').addEventListener('click', createNewProfile);
+  document.getElementById('delete-profile').addEventListener('click', deleteProfile);
+  document.getElementById('save').addEventListener('click', saveProfileData);
+  document.getElementById('reload').addEventListener('click', loadProfiles);
+  document.getElementById('auto-fill').addEventListener('click', autoFill);
+  document.getElementById('export-data').addEventListener('click', exportData);
+  document.getElementById('import-data').addEventListener('click', () => {
+    document.getElementById('file-input').click();
+  });
+  document.getElementById('file-input').addEventListener('change', importData);
+  document.getElementById('extract-data').addEventListener('click', extractData);
+  document.getElementById('send-email').addEventListener('click', sendEmail);
 });
 
-// Load profiles from storage and populate dropdown
+// Function to add a custom field to the popup
+function addCustomField(key = '', value = '') {
+  const container = document.getElementById('custom-fields-container');
+  const div = document.createElement('div');
+  div.className = 'custom-field';
+
+  const keyInput = document.createElement('input');
+  keyInput.type = 'text';
+  keyInput.placeholder = 'Field Name';
+  keyInput.value = key;
+
+  const valueInput = document.createElement('input');
+  valueInput.type = 'text';
+  valueInput.placeholder = 'Field Value';
+  valueInput.value = value;
+
+  const removeButton = document.createElement('button');
+  removeButton.textContent = 'X';
+  removeButton.className = 'remove-button';
+  removeButton.addEventListener('click', () => {
+    container.removeChild(div);
+    customFields = customFields.filter(f => f !== div);
+  });
+
+  div.appendChild(keyInput);
+  div.appendChild(valueInput);
+  div.appendChild(removeButton);
+
+  container.appendChild(div);
+  customFields.push(div);
+}
+
 function loadProfiles() {
-    chrome.storage.local.get(['profiles'], (result) => {
-        const profiles = result.profiles || [DEFAULT_PROFILE];
-        populateProfileSelector(profiles);
-    });
+  chrome.storage.local.get(['profiles'], (result) => {
+    profiles = result.profiles || [];
+
+    if (selectedProfileIndex >= profiles.length) {
+      selectedProfileIndex = 0;
+    }
+
+    populateProfileDropdown();
+    loadSelectedProfileData();
+  });
 }
 
-function populateProfileSelector(profiles) {
-    const profileSelector = document.getElementById('profileSelector');
-    profileSelector.innerHTML = '';
-
-    profiles.forEach((profile) => {
-        const option = document.createElement('option');
-        option.value = profile;
-        option.textContent = profile;
-        profileSelector.appendChild(option);
-    });
-
-    currentProfile = profiles[0];
-    profileSelector.value = currentProfile;
-
-    profileSelector.addEventListener('change', () => {
-        currentProfile = profileSelector.value;
-        loadExistingData();
-        loadMappings();
-    });
-
-    loadExistingData();
-    loadMappings();
+function populateProfileDropdown() {
+  const profileSelect = document.getElementById('profile-select');
+  profileSelect.innerHTML = '';
+  profiles.forEach((profile, index) => {
+    const option = document.createElement('option');
+    option.value = index;
+    option.text = profile.profileName;
+    profileSelect.add(option);
+  });
+  profileSelect.selectedIndex = selectedProfileIndex;
 }
 
-document.getElementById('addProfileButton').addEventListener('click', addProfile);
-document.getElementById('deleteProfileButton').addEventListener('click', deleteProfile);
+// Function to load data of the selected profile into form fields
+function loadSelectedProfileData() {
+  if (profiles[selectedProfileIndex]) {
+    const data = profiles[selectedProfileIndex].data;
+    document.getElementById('name').value = data.name || '';
+    document.getElementById('experiences').value = formatExperiences(data.experiences) || '';
+    document.getElementById('education').value = formatEducation(data.education) || '';
+    document.getElementById('summary').value = data.summary || '';
 
-function addProfile() {
-    const profileName = prompt("Enter a new profile name:");
-    if (!profileName) return;
+    // Clear existing custom fields
+    document.getElementById('custom-fields-container').innerHTML = '';
+    customFields = [];
 
-    chrome.storage.local.get(['profiles'], (result) => {
-        const profiles = result.profiles || [];
-        if (profiles.includes(profileName)) {
-            alert("Profile already exists!");
-            return;
-        }
-
-        profiles.push(profileName);
-        chrome.storage.local.set({ profiles }, () => {
-            chrome.storage.local.set({ [profileName]: {} }, () => {
-                populateProfileSelector(profiles);
-                currentProfile = profileName;
-                document.getElementById('profileSelector').value = currentProfile;
-                alert("Profile added successfully!");
-                loadExistingData();
-                loadMappings();
-            });
-        });
-    });
+    // Reload custom fields
+    if (data.customFields) {
+      data.customFields.forEach(field => {
+        addCustomField(field.key, field.value);
+      });
+    }
+  }
 }
 
+// Helper functions to format data for display
+function formatExperiences(experiences) {
+  if (!Array.isArray(experiences)) return '';
+  return experiences.map(exp => `${exp.jobTitle || ''} at ${exp.company || ''}`).join('\n');
+}
+
+function formatEducation(education) {
+  if (!Array.isArray(education)) return '';
+  return education
+    .filter(edu => edu.university || edu.degreeMajor)
+    .map(edu => {
+      const details = [
+        edu.university,
+        edu.degreeMajor,
+        edu.duration && `Duration: ${edu.duration}`,
+        edu.grade && `Grade: ${edu.grade}`,
+        edu.activities && `Activities: ${edu.activities}`
+      ].filter(Boolean).join('\n');
+      return details;
+    }).join('\n\n'); 
+}
+
+function createNewProfile() {
+  const newProfileModal = document.getElementById('new-profile-modal');
+  const saveNewProfileButton = document.getElementById('save-new-profile');
+  const cancelNewProfileButton = document.getElementById('cancel-new-profile');
+  const newProfileNameInput = document.getElementById('new-profile-name');
+
+  newProfileModal.style.display = 'flex';
+
+  const saveProfile = () => {
+    const profileName = newProfileNameInput.value.trim();
+    if (profileName) {
+      profiles.push({
+        profileName: profileName,
+        data: {}
+      });
+      selectedProfileIndex = profiles.length - 1;
+      chrome.storage.local.set({ profiles: profiles }, () => {
+        populateProfileDropdown();
+        loadSelectedProfileData();
+        showMessage('Profile created successfully!');
+      });
+    }
+    // Clear the input and hide the modal
+    newProfileNameInput.value = '';
+    newProfileModal.style.display = 'none';
+
+    // Clean up event listeners to avoid duplicate listeners
+    saveNewProfileButton.removeEventListener('click', saveProfile);
+    cancelNewProfileButton.removeEventListener('click', cancelProfileCreation);
+  };
+
+  // Event listener for canceling the new profile creation
+  const cancelProfileCreation = () => {
+    newProfileModal.style.display = 'none';
+    newProfileNameInput.value = ''; // Clear the input
+
+    // Clean up event listeners to avoid duplicate listeners
+    saveNewProfileButton.removeEventListener('click', saveProfile);
+    cancelNewProfileButton.removeEventListener('click', cancelProfileCreation);
+  };
+
+  // Attach the listeners
+  saveNewProfileButton.addEventListener('click', saveProfile);
+  cancelNewProfileButton.addEventListener('click', cancelProfileCreation);
+}
+
+// Function to delete the selected profile
 function deleteProfile() {
-    if (currentProfile === DEFAULT_PROFILE) {
-        alert("Default profile cannot be deleted!");
-        return;
+  if (profiles.length <= 1) {
+    alert('At least one profile must exist.');
+    return;
+  }
+  if (confirm('Are you sure you want to delete this profile?')) {
+    profiles.splice(selectedProfileIndex, 1);
+    selectedProfileIndex = 0;
+    chrome.storage.local.set({ profiles: profiles }, () => {
+      populateProfileDropdown();
+      loadSelectedProfileData();
+    });
+  }
+}
+
+function saveProfileData() {
+  const name = document.getElementById('name').value.trim();
+  const experiencesInput = document.getElementById('experiences').value.trim();
+  const educationInput = document.getElementById('education').value.trim();
+  const summary = document.getElementById('summary').value.trim();
+
+  const experiencesArray = parseTextToArray(experiencesInput, ' at ');
+  const educationArray = parseTextToArray(educationInput, ' - ');
+
+  const data = {
+    name: name || '',
+    experiences: experiencesArray,
+    education: educationArray,
+    summary: summary || '',
+    customFields: customFields.map(div => {
+      const inputs = div.getElementsByTagName('input');
+      return {
+        key: inputs[0].value.trim(),
+        value: inputs[1].value.trim()
+      };
+    })
+  };
+
+  profiles[selectedProfileIndex].data = data;
+
+  chrome.storage.local.set({ profiles: profiles }, () => {
+    showMessage('Profile saved successfully.');
+  });
+}
+
+function parseTextToArray(input, delimiter) {
+  if (!input) return [];
+  return input.split('\n').map(line => {
+    const [part1, part2] = line.split(delimiter);
+    if (delimiter === ' at ') {
+      return { jobTitle: part1?.trim() || '', company: part2?.trim() || '' };
+    } else if (delimiter === ' - ') {
+      return { university: part1?.trim() || '', degreeMajor: part2?.trim() || '' };
     }
+    return {};
+  }).filter(item => Object.values(item).some(value => value));
+}
 
-    if (!confirm(`Are you sure you want to delete the profile "${currentProfile}"?`)) return;
+// Function to display a temporary message
+function showMessage(message) {
+  const existingMessage = document.querySelector('.message');
+  if (existingMessage) {
+    existingMessage.remove();
+  }
 
-    chrome.storage.local.get(['profiles'], (result) => {
-        let profiles = result.profiles || [];
-        profiles = profiles.filter((profile) => profile !== currentProfile);
+  const messageDiv = document.createElement('div');
+  messageDiv.className = 'message';
+  messageDiv.textContent = message;
+  document.body.appendChild(messageDiv);
+  setTimeout(() => {
+    if (messageDiv.parentNode) {
+      messageDiv.parentNode.removeChild(messageDiv);
+    }
+  }, 2000);
+}
 
-        chrome.storage.local.remove([currentProfile], () => {
-            chrome.storage.local.set({ profiles }, () => {
-                populateProfileSelector(profiles);
-                currentProfile = profiles[0] || DEFAULT_PROFILE;
-                document.getElementById('profileSelector').value = currentProfile;
-                loadExistingData();
-                alert("Profile deleted successfully!");
+// Function to autofill the form on the current tab
+function autoFill() {
+  saveProfileData()
+  const data = profiles[selectedProfileIndex].data;
+  if (data) {
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+      const tabId = tabs[0].id;
+
+      // Inject contentScript.js into the active tab
+      chrome.scripting.executeScript(
+        {
+          target: { tabId: tabId },
+          files: ['content.js']
+        },
+        () => {
+          if (chrome.runtime.lastError) {
+            console.error(chrome.runtime.lastError);
+            alert('Error injecting content script: ' + chrome.runtime.lastError.message);
+          } else {
+            // After injecting, send the message
+            chrome.tabs.sendMessage(tabId, { action: 'autoFill', data }, function (response) {
+              if (chrome.runtime.lastError) {
+                console.error(chrome.runtime.lastError);
+                alert('Error: ' + chrome.runtime.lastError.message);
+              } else if (response && response.status) {
+                console.log(response.status);
+                // Display a success message
+                showMessage(response.status);
+              } else {
+                console.error('Unexpected response:', response);
+                alert('Unexpected response from content script.');
+              }
             });
-        });
-    });
-}
-
-function loadExistingData() {
-    if (!currentProfile) return;
-
-    chrome.storage.local.get([currentProfile], (result) => {
-        const data = result[currentProfile] || {};
-        displayFields(data);
-    });
-}
-
-function displayFields(data) {
-    const container = document.getElementById('dataFields');
-    container.innerHTML = '';
-    for (const [key, value] of Object.entries(data)) {
-        const fieldDiv = document.createElement('div');
-        fieldDiv.innerHTML = `
-            <input type="text" value="${key}" class="fieldKey" />
-            <input type="text" value="${value}" class="fieldValue" />
-            <button class="deleteField">Delete</button>
-        `;
-        container.appendChild(fieldDiv);
-    }
-}
-
-document.getElementById('addFieldButton').addEventListener('click', addNewField);
-document.getElementById('saveFieldsButton').addEventListener('click', saveAllData);
-
-function addNewField() {
-    const container = document.getElementById('dataFields');
-    const fieldDiv = document.createElement('div');
-    fieldDiv.innerHTML = `
-        <input type="text" placeholder="Field Name" class="fieldKey" />
-        <input type="text" placeholder="Field Value" class="fieldValue" />
-        <button class="deleteField">Delete</button>
-    `;
-    container.appendChild(fieldDiv);
-}
-
-document.getElementById('dataFields').addEventListener('click', (event) => {
-    if (event.target.classList.contains('deleteField')) {
-        event.target.parentElement.remove();
-    }
-});
-
-function saveAllData() {
-    if (!currentProfile) return;
-
-    const data = {};
-    let hasError = false;
-
-    document.querySelectorAll('#dataFields div').forEach((fieldDiv) => {
-        const key = fieldDiv.querySelector('.fieldKey').value.trim();
-        const value = fieldDiv.querySelector('.fieldValue').value.trim();
-
-        if (!key || !value) {
-            hasError = true;
-            fieldDiv.style.border = '1px solid red'; // Highlight empty fields
-        } else {
-            fieldDiv.style.border = ''; // Reset border
-            data[key] = value;
+          }
         }
+      );
     });
-
-    if (hasError) {
-        alert("Please fill out all fields before saving.");
-        return;
-    }
-
-    chrome.storage.local.set({ [currentProfile]: data }, () => {
-        alert("Data saved successfully!");
-    });
+  } else {
+    alert('No data available for the selected profile.');
+  }
 }
 
-// Mapping functionality
-function loadMappings() {
-    chrome.storage.local.get(['fieldMappings'], (result) => {
-        const fieldMappings = result.fieldMappings || {};
-        displayMappings(fieldMappings);
-    });
+// Function to export profile data to a JSON file
+function exportData() {
+  chrome.storage.local.get(['profiles'], (result) => {
+    const profilesData = result.profiles || [];
+
+    const jsonData = JSON.stringify(profilesData, null, 2);
+    const blob = new Blob([jsonData], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'profiles.json';
+    a.click();
+
+    URL.revokeObjectURL(url);
+  });
 }
 
-function displayMappings(fieldMappings) {
-    const container = document.getElementById('mappingContainer');
-    container.innerHTML = '';
+// Function to import profile data from a JSON file
+function importData(event) {
+  const file = event.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      try {
+        const importedData = JSON.parse(e.target.result);
 
-    for (const [linkedinField, formField] of Object.entries(fieldMappings)) {
-        const mappingDiv = document.createElement('div');
-        mappingDiv.innerHTML = `
-            <input type="text" value="${linkedinField}" class="linkedinField" placeholder="LinkedIn Field" />
-            <input type="text" value="${formField}" class="formFieldMapping" placeholder="Form Field" />
-            <button class="saveMapping">Save</button>
-            <button class="deleteMapping">Delete</button>
-        `;
-        container.appendChild(mappingDiv);
-    }
+        if (Array.isArray(importedData)) {
+          if (confirm('Do you want to replace your existing profiles with the imported data? Click "Cancel" to merge them.')) {
+            chrome.storage.local.set({ profiles: importedData }, () => {
+              alert('Profiles replaced successfully.');
+              loadProfiles();
+            });
+          } else {
+            chrome.storage.local.get(['profiles'], (result) => {
+              const existingProfiles = result.profiles || [];
+              const mergedProfiles = existingProfiles.concat(importedData);
+              chrome.storage.local.set({ profiles: mergedProfiles }, () => {
+                alert('Profiles merged successfully.');
+                loadProfiles();
+              });
+            });
+          }
+        } else {
+          alert('Invalid data format. Please select a valid profiles JSON file.');
+        }
+      } catch (error) {
+        console.error(error);
+        alert('Error parsing the file. Please ensure it is a valid JSON file.');
+      }
+    };
+    reader.readAsText(file);
+  }
 }
 
-document.getElementById('mappingContainer').addEventListener('click', (event) => {
-    if (event.target.classList.contains('saveMapping')) {
-        saveMapping(event);
-    } else if (event.target.classList.contains('deleteMapping')) {
-        deleteMapping(event);
-    }
-});
+// Function to extract data from the current page
+function extractData() {
+  const confirmExtract = confirm('Please Enter Your LinkedIn page');
+  if (!confirmExtract) return;
 
-function saveMapping(event) {
-    const mappingDiv = event.target.closest('div');
-    const linkedinField = mappingDiv.querySelector('.linkedinField').value.trim();
-    const formField = mappingDiv.querySelector('.formFieldMapping').value.trim();
+  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+    const tabId = tabs[0].id;
+    const tabUrl = tabs[0].url;
 
-    if (!linkedinField || !formField) {
-        alert("Both LinkedIn Field and Form Field are required!");
-        return;
-    }
+    console.log('Extracting data from tab:', tabUrl);
 
-    chrome.storage.local.get(['fieldMappings'], (result) => {
-        const fieldMappings = result.fieldMappings || {};
-        fieldMappings[linkedinField] = formField;
+    // Inject contentScript.js into the active tab
+    chrome.scripting.executeScript(
+      {
+        target: { tabId: tabId },
+        files: ['content.js']
+      },
+      () => {
+        if (chrome.runtime.lastError) {
+          console.error('Error injecting content script:', chrome.runtime.lastError);
+          alert('Error injecting content script: ' + chrome.runtime.lastError.message);
+          return;
+        }
 
-        chrome.storage.local.set({ fieldMappings }, () => {
-            alert("Mapping saved!");
-            loadMappings();
+        // After injecting, send the message to extract data
+        chrome.tabs.sendMessage(tabId, { action: 'extractData' }, function (response) {
+          if (!response) {
+            console.error('No response from content script');
+            alert('No response from content script');
+            return;
+          }
+          if (response.success) {
+            const data = response.data;
+            console.log('Extracted Data:', data);
+            populateDataFields(data);
+            // Optionally save the extracted data
+            // profiles[selectedProfileIndex].data = data;
+            // chrome.storage.local.set({ profiles: profiles });
+            // Display a success message
+            showMessage('Data extracted successfully.');
+          } else {
+            console.error('Error extracting data:', response.error);
+            alert('Error extracting data: ' + response.error);
+          }
         });
+      }
+    );
+  });
+}
+// Function to populate data fields with extracted data
+function populateDataFields(data) {
+  document.getElementById('name').value = data.name || '';
+
+  // Format experiences array into a string
+  let experiencesText = '';
+  if (data.experiences && data.experiences.length > 0) {
+    experiencesText = data.experiences.map(exp => {
+      let expStr = '';
+      if (exp.jobTitle) {
+        expStr += exp.jobTitle;
+      }
+      if (exp.company) {
+        expStr += ` \n ${exp.company}`;
+      }
+      return expStr;
+    }).join('\n\n');
+  }
+  document.getElementById('experiences').value = experiencesText;
+
+  document.getElementById('summary').value = data.summary || '';
+
+  // Format education array into a string with all details
+  let educationText = '';
+  if (data.education && data.education.length > 0) {
+    educationText = data.education.map(edu => {
+      let eduStr = '';
+      if (edu.university) {
+        eduStr += ` ${edu.university}`;
+      }
+      if (edu.degreeMajor) {
+        eduStr += `\n ${edu.degreeMajor}`;
+      }
+      return eduStr.trim(); // Trim any trailing whitespace
+    }).join('\n\n'); // Add a blank line between entries
+  }
+  document.getElementById('education').value = educationText;
+
+  document.getElementById('custom-fields-container').innerHTML = '';
+  customFields = [];
+
+  if (data.customFields) {
+    data.customFields.forEach(field => {
+      addCustomField(field.key, field.value);
     });
+  }
 }
 
-function deleteMapping(event) {
-    const mappingDiv = event.target.closest('div');
-    const linkedinField = mappingDiv.querySelector('.linkedinField').value.trim();
+function sendEmail() {
+  chrome.storage.local.get(['profiles'], (result) => {
+    const profilesData = result.profiles || [];
+    const jsonData = JSON.stringify(profilesData, null, 2);
 
-    chrome.storage.local.get(['fieldMappings'], (result) => {
-        const fieldMappings = result.fieldMappings || {};
-        delete fieldMappings[linkedinField];
+    // Create a Blob and file URL for the JSON data
+    const blob = new Blob([jsonData], { type: 'application/json' });
+    const fileUrl = URL.createObjectURL(blob);
 
-        chrome.storage.local.set({ fieldMappings }, () => {
-            alert("Mapping deleted!");
-            loadMappings();
-        });
-    });
+    // Automatically download the JSON file
+    const downloadLink = document.createElement('a');
+    downloadLink.href = fileUrl;
+    downloadLink.download = 'profiles.json';
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+
+    // Prefill an email with instructions to attach the downloaded file
+    const subject = encodeURIComponent('Exported Profile Data');
+    const body = encodeURIComponent(
+      `Attached is the exported profile data from the Supreme Auto Filler extension.\n\nPlease attach the downloaded file "profiles.json" to this email before sending.`
+    );
+
+    // Open the user's email client
+    const mailtoLink = `mailto:?subject=${subject}&body=${body}`;
+    window.location.href = mailtoLink;
+
+    setTimeout(() => URL.revokeObjectURL(fileUrl), 1000);
+  })
 }
