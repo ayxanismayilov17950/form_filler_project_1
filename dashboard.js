@@ -1,4 +1,3 @@
-
 document.addEventListener("DOMContentLoaded", () => {
     const applicationTable = document.getElementById("application-table").querySelector("tbody");
     const modal = document.getElementById("application-modal");
@@ -101,4 +100,5 @@ document.addEventListener("DOMContentLoaded", () => {
   
     // Initial fetch
     fetchApplications();
-});
+  });
+  

@@ -9,9 +9,10 @@ let customFields = [];
 // Load profiles when the popup is opened
 document.addEventListener('DOMContentLoaded', () => {
   loadProfiles();
-
-  // Event listeners for buttons and inputs
-  document.getElementById('add-custom-field').addEventListener('click', addCustomField);
+  
+  document.getElementById('add-custom-field').addEventListener('click', () => {
+    addCustomField();
+  });
   document.getElementById('profile-select').addEventListener('change', () => {
     selectedProfileIndex = parseInt(document.getElementById('profile-select').value, 10);
     loadSelectedProfileData();
@@ -20,7 +21,6 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('new-profile').addEventListener('click', createNewProfile);
   document.getElementById('delete-profile').addEventListener('click', deleteProfile);
   document.getElementById('save').addEventListener('click', saveProfileData);
-  document.getElementById('reload').addEventListener('click', loadProfiles);
   document.getElementById('auto-fill').addEventListener('click', autoFill);
   document.getElementById('export-data').addEventListener('click', exportData);
   document.getElementById('import-data').addEventListener('click', () => {
@@ -30,6 +30,17 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('extract-data').addEventListener('click', extractData);
   document.getElementById('send-email').addEventListener('click', sendEmail);
 });
+  // Event listener for the "Generate Cover Letter" button
+  document.getElementById('generate-letter').addEventListener('click', () => {
+    const data = profiles[selectedProfileIndex].data;
+
+    // Get company name and job title from input fields
+    const companyName = document.getElementById('company-name').value.trim();
+    const jobTitle = document.getElementById('job-title').value.trim();
+
+    // Call the createCoverLetter function
+    createCoverLetter(data, companyName, jobTitle);
+  });
 
 // Function to add a custom field to the popup
 function addCustomField(key = '', value = '') {
@@ -96,6 +107,7 @@ function loadSelectedProfileData() {
     document.getElementById('experiences').value = formatExperiences(data.experiences) || '';
     document.getElementById('education').value = formatEducation(data.education) || '';
     document.getElementById('summary').value = data.summary || '';
+    document.getElementById('cover-letter').value = data.coverLetter || '';
 
     // Clear existing custom fields
     document.getElementById('custom-fields-container').innerHTML = '';
@@ -199,6 +211,7 @@ function saveProfileData() {
   const experiencesInput = document.getElementById('experiences').value.trim();
   const educationInput = document.getElementById('education').value.trim();
   const summary = document.getElementById('summary').value.trim();
+  const coverLetter = document.getElementById('cover-letter').value.trim();
 
   const experiencesArray = parseTextToArray(experiencesInput, ' at ');
   const educationArray = parseTextToArray(educationInput, ' - ');
@@ -208,6 +221,7 @@ function saveProfileData() {
     experiences: experiencesArray,
     education: educationArray,
     summary: summary || '',
+    coverLetter: coverLetter || '',
     customFields: customFields.map(div => {
       const inputs = div.getElementsByTagName('input');
       return {
@@ -237,7 +251,6 @@ function parseTextToArray(input, delimiter) {
   }).filter(item => Object.values(item).some(value => value));
 }
 
-// Function to display a temporary message
 function showMessage(message) {
   const existingMessage = document.querySelector('.message');
   if (existingMessage) {
@@ -401,7 +414,6 @@ function extractData() {
     );
   });
 }
-// Function to populate data fields with extracted data
 function populateDataFields(data) {
   document.getElementById('name').value = data.name || '';
 
@@ -453,29 +465,105 @@ function sendEmail() {
   chrome.storage.local.get(['profiles'], (result) => {
     const profilesData = result.profiles || [];
     const jsonData = JSON.stringify(profilesData, null, 2);
-
-    // Create a Blob and file URL for the JSON data
     const blob = new Blob([jsonData], { type: 'application/json' });
     const fileUrl = URL.createObjectURL(blob);
-
-    // Automatically download the JSON file
     const downloadLink = document.createElement('a');
     downloadLink.href = fileUrl;
     downloadLink.download = 'profiles.json';
     document.body.appendChild(downloadLink);
     downloadLink.click();
     document.body.removeChild(downloadLink);
-
-    // Prefill an email with instructions to attach the downloaded file
     const subject = encodeURIComponent('Exported Profile Data');
     const body = encodeURIComponent(
-      `Attached is the exported profile data from the Supreme Auto Filler extension.\n\nPlease attach the downloaded file "profiles.json" to this email before sending.`
+      `Attach the exported file "profiles.json" to this email.`
     );
-
-    // Open the user's email client
     const mailtoLink = `mailto:?subject=${subject}&body=${body}`;
     window.location.href = mailtoLink;
 
     setTimeout(() => URL.revokeObjectURL(fileUrl), 1000);
   })
 }
+  document.getElementById('extract-job-details').addEventListener('click', () => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const tabId = tabs[0].id;
+
+      chrome.scripting.executeScript(
+        {
+          target: { tabId: tabId },
+          func: extractJobDetails,
+        },
+        (results) => {
+          if (chrome.runtime.lastError) {
+            console.error('Error injecting script:', chrome.runtime.lastError);
+            alert('Error extracting job details: ' + chrome.runtime.lastError.message);
+            return;
+          }
+
+          if (!results || results.length === 0 || !results[0].result) {
+            console.error('No results from script execution');
+            alert('Unable to extract job details from the page.');
+            return;
+          }
+
+          const { jobTitle, companyName } = results[0].result;
+          if (!jobTitle && !companyName) {
+            alert('Unable to detect job title or company name on this page.');
+            return;
+          }
+
+          // Populate the input fields in the popup
+          if (jobTitle) {
+            document.getElementById('job-title').value = jobTitle;
+          }
+          if (companyName) {
+            document.getElementById('company-name').value = companyName;
+          }
+
+          showMessage('Job details extracted successfully.');
+        }
+      );
+    });
+  });
+  function generateCoverLetter() {
+    const data = profiles[selectedProfileIndex].data;
+      const companyName = document.getElementById('company-name').value.trim();
+    const jobTitle = document.getElementById('job-title').value.trim();
+  
+    if (!companyName || !jobTitle) {
+      alert('Please enter both Company Name and Job Title, or click "Extract from Page".');
+      return;
+    }
+  
+    createCoverLetter(data, companyName, jobTitle)
+      .then((coverLetter) => {
+        document.getElementById('cover-letter').value = coverLetter;
+        data.coverLetter = coverLetter;
+        profiles[selectedProfileIndex].data = data;
+        chrome.storage.local.set({ profiles: profiles });
+        showMessage('Cover letter generated successfully.');
+      })
+      .catch((error) => {
+        console.error('Error generating cover letter:', error);
+        alert('Error generating cover letter: ' + error.message);
+      });
+  }
+  
+  // Function to extract job details from the application page
+  function extractJobDetails() {
+    let jobTitle = '';
+    let companyName = '';
+  
+    // Attempt to detect job title and company name
+    const jobTitleElement = document.querySelector('h1.job-title, h1.title, .job-title, .title, h1');
+    const companyNameElement = document.querySelector('.company-name, .company, .employer');
+  
+    if (jobTitleElement) {
+      jobTitle = jobTitleElement.innerText.trim();
+    }
+  
+    if (companyNameElement) {
+      companyName = companyNameElement.innerText.trim();
+    }
+  
+    return { jobTitle, companyName };
+  }
