@@ -153,6 +153,20 @@ function fillForm(data) {
     } else if (data.certifications && data.certifications.length > 0 && matchesField(['certifications', 'licenses'], nameAttr, idAttr, placeholderAttr, labelText)) {
       input.value = data.certifications.map((cert) => `${cert.certificateName} by ${cert.issuer}`).join('\n');
     }
+    else if (data.coverLetter && matchesField(['cover letter', 'motivation letter', 'letter'], nameAttr, idAttr, placeholderAttr, labelText)) {
+      input.value = data.coverLetter;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    else if (data.customFields && Array.isArray(data.customFields)) {
+      data.customFields.forEach(field => {
+        const key = field.key.toLowerCase();
+        if (key && field.value && matchesField([key], nameAttr, idAttr, placeholderAttr, labelText)) {
+          input.value = field.value;
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+      });
+    }
+
 
     // Trigger change event to ensure the input is recognized
     input.dispatchEvent(new Event('input', { bubbles: true }));
