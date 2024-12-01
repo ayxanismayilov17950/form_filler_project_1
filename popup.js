@@ -411,7 +411,6 @@ function extractData() {
 
     console.log('Extracting data from tab:', tabUrl);
 
-    // Inject contentScript.js into the active tab
     chrome.scripting.executeScript(
       {
         target: { tabId: tabId },
@@ -435,10 +434,6 @@ function extractData() {
             const data = response.data;
             console.log('Extracted Data:', data);
             populateDataFields(data);
-            // Optionally save the extracted data
-            // profiles[selectedProfileIndex].data = data;
-            // chrome.storage.local.set({ profiles: profiles });
-            // Display a success message
             showMessage('Data extracted successfully.');
           } else {
             console.error('Error extracting data:', response.error);
@@ -559,7 +554,6 @@ function sendEmail() {
             return;
           }
 
-          // Populate the input fields in the popup
           if (jobTitle) {
             document.getElementById('job-title').value = jobTitle;
           }
@@ -596,12 +590,10 @@ function sendEmail() {
       });
   }
   
-  // Function to extract job details from the application page
   function extractJobDetails() {
     let jobTitle = '';
     let companyName = '';
-  
-    // Attempt to detect job title and company name
+
     const jobTitleElement = document.querySelector('h1.job-title, h1.title, .job-title, .title, h1');
     const companyNameElement = document.querySelector('.company-name, .company, .employer');
   
@@ -614,4 +606,103 @@ function sendEmail() {
     }
   
     return { jobTitle, companyName };
+  }
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('save-form-data').addEventListener('click', saveCurrentFormData);
+    document.getElementById('load-form-data').addEventListener('click', loadFormDataForCurrentPage);
+  });
+  
+  function saveCurrentFormData() {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const activeTab = tabs[0];
+  
+      chrome.scripting.executeScript(
+        {
+          target: { tabId: activeTab.id },
+          func: extractFormData,
+        },
+        (results) => {
+          if (chrome.runtime.lastError) {
+            alert('Error extracting form data: ' + chrome.runtime.lastError.message);
+            return;
+          }
+  
+          const formData = results[0]?.result;
+          if (!formData || Object.keys(formData).length === 0) {
+            alert('No form data found on this page.');
+            return;
+          }
+  
+          // Save the form data with the page URL
+          chrome.storage.local.get(['formHistory'], (result) => {
+            const history = result.formHistory || [];
+            history.push({
+              url: activeTab.url,
+              formData,
+              timestamp: new Date().toISOString()
+            });
+            chrome.storage.local.set({ formHistory: history }, () => {
+              alert('Form data saved successfully.');
+            });
+          });
+        }
+      );
+    });
+  }
+  
+  /**
+   * Extracts form data from the active page
+   */
+  function extractFormData() {
+    const formData = {};
+    const inputs = document.querySelectorAll('input, textarea, select');
+  
+    inputs.forEach((input) => {
+      const name = input.name || input.id || input.placeholder || `field_${Math.random().toString(36).substr(2, 5)}`;
+      formData[name] = input.value;
+    });
+  
+    return formData;
+  }
+  
+  function loadFormDataForCurrentPage() {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const activeTab = tabs[0];
+  
+      chrome.storage.local.get(['formHistory'], (result) => {
+        const history = result.formHistory || [];
+        const savedForm = history.find((entry) => entry.url === activeTab.url);
+  
+        if (!savedForm) {
+          alert('No saved form data found for this page.');
+          return;
+        }
+        chrome.scripting.executeScript(
+          {
+            target: { tabId: activeTab.id },
+            func: autofillForm,
+            args: [savedForm.formData],
+          },
+          () => {
+            if (chrome.runtime.lastError) {
+              alert('Error autofilling form: ' + chrome.runtime.lastError.message);
+            } else {
+              alert('Form data loaded successfully.');
+            }
+          }
+        );
+      });
+    });
+  }
+  
+  function autofillForm(data) {
+    const inputs = document.querySelectorAll('input, textarea, select');
+  
+    inputs.forEach((input) => {
+      const name = input.name || input.id || input.placeholder;
+      if (name && data[name] !== undefined) {
+        input.value = data[name];
+        input.dispatchEvent(new Event('input', { bubbles: true })); // Trigger change event
+      }
+    });
   }
