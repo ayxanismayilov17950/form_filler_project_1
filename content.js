@@ -12,7 +12,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
       const name = nameElement ? nameElement.innerText.trim() : null;
       console.log('Extracted Name:', name);
 
-      // Extract Experiences
       const experiences = [];
       const experienceContainer = document.querySelector('#experience');
       if (experienceContainer) {
@@ -58,36 +57,50 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
       }
       console.log('Extracted Education:', education);
 
-      // Extract Skills
-      const skills = [];
-      const skillsSection = document.querySelector('#skills');
-      if (skillsSection) {
-        const secondSibling = skillsSection.nextElementSibling?.nextElementSibling;
-        if (secondSibling) {
-          const skillItems = secondSibling.querySelectorAll('span[aria-hidden="true"]');
-          skillItems.forEach((skillSpan) => {
-            const skillName = skillSpan.textContent.trim();
-            if (skillName) skills.push(skillName);
-          });
-        }
-      }
-      console.log('Extracted Skills:', skills);
 
-      // Extract Licenses & Certifications
-      const certifications = [];
-      const certificationsSection = document.querySelector('section[id="certifications"]');
-      if (certificationsSection) {
-        const certificationItems = certificationsSection.querySelectorAll('li.artdeco-list__item');
-        certificationItems.forEach((item) => {
-          const certificateName = item.querySelector('span[aria-hidden="true"]')?.textContent.trim() || null;
-          const issuer = item.querySelector('span.t-14.t-normal span[aria-hidden="true"]')?.textContent.trim() || null;
-          if (certificateName || issuer) certifications.push({ certificateName, issuer });
-        });
+      let certificates = [];
+      const certificatesContainer = document.querySelector('#licenses_and_certifications');
+
+      if (certificatesContainer) {
+        // Navigate to the sibling div containing the certificates data
+        const siblingDiv = certificatesContainer.nextElementSibling?.nextElementSibling;
+
+        if (siblingDiv) {
+          // Look for the certificate items within this div
+          const certificateItems = siblingDiv.querySelectorAll('li.artdeco-list__item');
+
+          certificateItems.forEach((item) => {
+            const certificateNameElement = item.querySelector('div.display-flex.align-items-center.mr1.t-bold span[aria-hidden="true"]');
+            const certificateName = certificateNameElement ? certificateNameElement.textContent.trim() : null;
+
+            const issuingOrgElement = item.querySelector('span.t-14.t-normal span[aria-hidden="true"]');
+            const issuingOrganization = issuingOrgElement ? issuingOrgElement.textContent.trim() : null;
+
+            // Extract issued and expiration dates if available
+            const dateElement = item.querySelector('span.t-14.t-normal.t-black--light span[aria-hidden="true"]');
+            const dateText = dateElement ? dateElement.textContent.trim() : null;
+
+            if (certificateName || issuingOrganization) {
+              certificates.push({ certificateName, issuingOrganization, dateText });
+            }
+          });
+
+          console.log('Extracted Certificates:', certificates);
+        } else {
+          console.log('Sibling div containing certificates data not found.');
+        }
+      } else {
+        console.log('Certificates container with ID "licenses_and_certifications" not found.');
       }
-      console.log('Extracted Certifications:', certifications);
 
       // Prepare and send response data
-      const data = { name, experiences, education, skills, summary, certifications };
+      const data = { 
+          name, 
+          experiences, 
+          education,
+         summary,
+          certificates
+        };
       console.log('Data Extraction Complete:', data);
       sendResponse({ success: true, data });
     } catch (error) {
@@ -146,12 +159,21 @@ function fillForm(data) {
       input.value = data.experiences.map((exp) => `${exp.jobTitle} at ${exp.company}`).join('\n');
     } else if (data.education && data.education.length > 0 && matchesField(['education'], nameAttr, idAttr, placeholderAttr, labelText)) {
       input.value = data.education.map((edu) => `${edu.university} (${edu.degreeMajor || ''})`).join('\n');
-    } else if (data.skills && data.skills.length > 0 && matchesField(['skills'], nameAttr, idAttr, placeholderAttr, labelText)) {
-      input.value = data.skills.join(', ');
     } else if (data.summary && matchesField(['summary', 'about me'], nameAttr, idAttr, placeholderAttr, labelText)) {
       input.value = data.summary;
-    } else if (data.certifications && data.certifications.length > 0 && matchesField(['certifications', 'licenses'], nameAttr, idAttr, placeholderAttr, labelText)) {
-      input.value = data.certifications.map((cert) => `${cert.certificateName} by ${cert.issuer}`).join('\n');
+    } else if (data.certificates && data.certificates.length > 0 && matchesField(['certificates', 'certification'], nameAttr, idAttr, placeholderAttr, labelText)) {
+      const certificatesText = data.certificates.map(cert => {
+        let certStr = cert.certificateName || '';
+        if (cert.issuingOrganization) {
+          certStr += ` from ${cert.issuingOrganization}`;
+        }
+        if (cert.dateText) {
+          certStr += ` (${cert.dateText})`;
+        }
+        return certStr;
+      }).join('\n');
+      input.value = certificatesText;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
     }
     else if (data.coverLetter && matchesField(['cover letter', 'motivation letter', 'letter'], nameAttr, idAttr, placeholderAttr, labelText)) {
       input.value = data.coverLetter;

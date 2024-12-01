@@ -85,7 +85,7 @@ document.addEventListener("DOMContentLoaded", () => {
           form["date-applied"].value = app.dateApplied;
           form.status.value = app.status;
           form.dataset.editIndex = index;
-          modal.style.display = "block";
+          modal.style.display = "inline";
         });
       } else if (e.target.classList.contains("delete-btn")) {
         const index = e.target.dataset.index;

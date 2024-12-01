@@ -106,6 +106,7 @@ function loadSelectedProfileData() {
     document.getElementById('name').value = data.name || '';
     document.getElementById('experiences').value = formatExperiences(data.experiences) || '';
     document.getElementById('education').value = formatEducation(data.education) || '';
+    document.getElementById('certificates').value = formatCertificates(data.certificates) || '';
     document.getElementById('summary').value = data.summary || '';
     document.getElementById('cover-letter').value = data.coverLetter || '';
 
@@ -142,6 +143,19 @@ function formatEducation(education) {
       ].filter(Boolean).join('\n');
       return details;
     }).join('\n\n'); 
+}
+function formatCertificates(certificates) {
+  if (!Array.isArray(certificates)) return '';
+  return certificates.map(cert => {
+    let certStr = cert.certificateName || '';
+    if (cert.issuingOrganization) {
+      certStr += ` from ${cert.issuingOrganization}`;
+    }
+    if (cert.dateText) {
+      certStr += ` (${cert.dateText})`;
+    }
+    return certStr;
+  }).join('\n');
 }
 
 function createNewProfile() {
@@ -210,16 +224,37 @@ function saveProfileData() {
   const name = document.getElementById('name').value.trim();
   const experiencesInput = document.getElementById('experiences').value.trim();
   const educationInput = document.getElementById('education').value.trim();
+  const certificatesInput = document.getElementById('certificates').value.trim();
   const summary = document.getElementById('summary').value.trim();
   const coverLetter = document.getElementById('cover-letter').value.trim();
 
   const experiencesArray = parseTextToArray(experiencesInput, ' at ');
   const educationArray = parseTextToArray(educationInput, ' - ');
+  
+  const certificatesArray = certificatesInput.split('\n').map(line => {
+    const [namePart, rest] = line.split(' from ');
+    let certificateName = namePart ? namePart.trim() : '';
+    let issuingOrganization = '';
+    let dateText = '';
+    if (rest) {
+      const dateStart = rest.indexOf('(');
+      if (dateStart !== -1) {
+        issuingOrganization = rest.substring(0, dateStart).trim();
+        dateText = rest.substring(dateStart + 1, rest.length - 1).trim();
+      } else {
+        issuingOrganization = rest.trim();
+      }
+    }
+
+    return { certificateName, issuingOrganization, dateText };
+  }).filter(cert => cert.certificateName);
+
 
   const data = {
     name: name || '',
     experiences: experiencesArray,
     education: educationArray,
+    certificates: certificatesArray,
     summary: summary || '',
     coverLetter: coverLetter || '',
     customFields: customFields.map(div => {
@@ -435,7 +470,6 @@ function populateDataFields(data) {
 
   document.getElementById('summary').value = data.summary || '';
 
-  // Format education array into a string with all details
   let educationText = '';
   if (data.education && data.education.length > 0) {
     educationText = data.education.map(edu => {
@@ -450,6 +484,20 @@ function populateDataFields(data) {
     }).join('\n\n'); // Add a blank line between entries
   }
   document.getElementById('education').value = educationText;
+  let certificatesText = '';
+  if (data.certificates && data.certificates.length > 0) {
+    certificatesText = data.certificates.map(cert => {
+      let certStr = cert.certificateName || '';
+      if (cert.issuingOrganization) {
+        certStr += ` from ${cert.issuingOrganization}`;
+      }
+      if (cert.dateText) {
+        certStr += ` (${cert.dateText})`;
+      }
+      return certStr;
+    }).join('\n');
+  }
+  document.getElementById('certificates').value = certificatesText;
 
   document.getElementById('custom-fields-container').innerHTML = '';
   customFields = [];

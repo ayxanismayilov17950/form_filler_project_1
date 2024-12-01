@@ -2,10 +2,13 @@
   "manifest_version": 3,
   "name": "Auto Form Filler",
   "version": "1.0",
-  "description": "auto form filler with linkedin",
+  "description": "Auto Form Filler with Linkedin Extraction",
   "permissions": ["storage", "activeTab", "tabs", "scripting"],
   "action": {
     "default_popup": "popup.html"
+  },
+  "icons":{
+    "100": "icons/website_icon.png"
   },
   "content_scripts": [
     {
