@@ -61,10 +61,10 @@ Import Profiles:
 
 7. Cover Letter Generation
 Generate a Cover Letter:
-1. After creating a profile with the necessary data (Name, Experience, Education, Skills), click the Generate Cover Letter button.
-2. Enter the job title and company name for the position you are applying for.
-3. The extension will generate a professional cover letter using the Gemma-2 API via RapidAPI based on the user's background.
-4. The generated cover letter will be displayed in a text area, where it can be edited or saved to the profile.
+- After creating a profile with the necessary data (Name, Experience, Education, Skills), click the Generate Cover Letter button.
+- Enter the job title and company name for the position you are applying for.
+- The extension will generate a professional cover letter using the Gemma-2 API via RapidAPI based on the user's background.
+- The generated cover letter will be displayed in a text area, where it can be edited or saved to the profile.
 
 Permissions:
 The extension requests the following permissions
