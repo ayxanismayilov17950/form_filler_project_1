@@ -101,4 +101,3 @@ document.addEventListener("DOMContentLoaded", () => {
     // Initial fetch
     fetchApplications();
   });
-  
