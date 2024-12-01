@@ -2,7 +2,7 @@ Auto Filler Extension
 
 The Auto Filler extension allows users to manage, save, and automatically fill in profile data (like name, experiences, education, and custom fields) into web forms. It supports creating and managing multiple profiles, exporting/importing profile data in JSON format, extracting data from LinkedIn, and even sending exported data via email.
 
-Features
+Features:
 - Profile Management: Create, edit, delete, and save multiple user profiles.
 - Auto-Fill: Automatically fill in form fields (such as name, experiences, education, etc.) using stored profile data.
 - Custom Fields: Add custom fields to each profile to store additional user-specific data.
@@ -10,7 +10,7 @@ Features
 - LinkedIn Data Extraction: Extract user profile data from LinkedIn pages for auto-filling.
 - Email Export: Export profile data to a JSON file and automatically pre-fill an email with a message and the file attached.
 
-Installation Instructions
+Installation Instructions:
 1. Load the Extension in Chrome:
 - Open Chrome and navigate to chrome://extensions/.
 - Enable Developer Mode in the top-right corner.
@@ -18,7 +18,7 @@ Installation Instructions
 2. Verify Installation:
 - After loading, the extension icon should appear in the Chrome toolbar.
 
-Features and Usage
+Features and Usage:
 1. Creating and Managing Profiles
 Create a New Profile:
 - Click the extension icon.
@@ -58,7 +58,7 @@ Import Profiles:
 - Click Send Email to export profile data and pre-fill an email with instructions to attach the .json file for sharing.
 - The extension will automatically download the .json file and open the default email client with a message pre-filled.
 
-Permissions
+Permissions:
 The extension requests the following permissions:
 - storage: To store profile data locally in Chrome.
 - tabs: To interact with and autofill web forms on active tabs.
@@ -68,13 +68,13 @@ The extension requests the following permissions:
 - content.js: Responsible for interacting with the web pages for auto-filling form fields and extracting data (referenced in the popup.js but not provided here).
 - manifest.json: Contains metadata, permissions, and other configuration settings for the extension.
 
-How It Works
+How It Works:
 1. Profile Data Storage: All profile data is stored in Chrome's local storage and can be accessed and modified by the extension. Profiles are stored as JavaScript objects, which include the profile name, experiences, education, summary, and custom fields.
 2. Auto-Filling Forms: When the user clicks the Auto-Fill button, the extension attempts to inject the content.js script into the active tab. This script uses the stored profile data to fill in the form fields. It works best on forms with commonly recognized field names (e.g., name, email, education).
 3. LinkedIn Data Extraction: When extracting data from LinkedIn, the extension uses the content.js script to scrape relevant information from the page (e.g., job titles, companies, education). This data is then pre-filled into the form fields for the user to save or auto-fill elsewhere.
 4. Exporting Data: Profiles can be exported to a .json file. This file can be saved, shared, or imported back into the extension. The export function generates a JSON string from the stored profiles and creates a downloadable file.
 
-Troubleshooting
+Troubleshooting:
 Auto-Fill Not Working:
 - Ensure the form fields on the target website use recognizable field names such as name, experience, education, and other relevant attributes.
 - Check the permissions in the manifest.json to ensure they are correctly set up.
