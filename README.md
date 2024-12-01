@@ -3,12 +3,12 @@ Auto Filler Extension
 The Auto Filler extension allows users to manage, save, and automatically fill in profile data (like name, experiences, education, and custom fields) into web forms. It supports creating and managing multiple profiles, exporting/importing profile data in JSON format, extracting data from LinkedIn, and even sending exported data via email.
 
 Features
-Profile Management: Create, edit, delete, and save multiple user profiles.
-Auto-Fill: Automatically fill in form fields (such as name, experiences, education, etc.) using stored profile data.
-Custom Fields: Add custom fields to each profile to store additional user-specific data.
-Export/Import Profiles: Export all profiles to a JSON file, and import profiles from a JSON file.
-LinkedIn Data Extraction: Extract user profile data from LinkedIn pages for auto-filling.
-Email Export: Export profile data to a JSON file and automatically pre-fill an email with a message and the file attached.
+- Profile Management: Create, edit, delete, and save multiple user profiles.
+- Auto-Fill: Automatically fill in form fields (such as name, experiences, education, etc.) using stored profile data.
+- Custom Fields: Add custom fields to each profile to store additional user-specific data.
+- Export/Import Profiles: Export all profiles to a JSON file, and import profiles from a JSON file.
+- LinkedIn Data Extraction: Extract user profile data from LinkedIn pages for auto-filling.
+- Email Export: Export profile data to a JSON file and automatically pre-fill an email with a message and the file attached.
 
 Installation Instructions
 1. Load the Extension in Chrome:
