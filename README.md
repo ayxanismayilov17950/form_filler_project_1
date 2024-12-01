@@ -55,11 +55,17 @@ Import Profiles:
 - Click Extract Data to scrape data (e.g., name, experience, education) from the LinkedIn page.
 - The data will be populated into the form fields and can be saved as part of a profile.
 
-6. Email Export
+6. History Restoring
+- Backup Management: Automatically create and store backups of your profiles.
+- Restore Points: Define and restore profiles to specific historical points.
+- Version Control: Track changes and restore earlier versions of a profile when needed.
+- Data Integrity Checks: Ensure restored profiles are accurate and consistent.
+
+7. Email Export
 - Click Send Email to export profile data and pre-fill an email with instructions to attach the .json file for sharing.
 - The extension will automatically download the .json file and open the default email client with a message pre-filled.
 
-7. Cover Letter Generation
+8. Cover Letter Generation
 Generate a Cover Letter:
 - After creating a profile with the necessary data (Name, Experience, Education, Skills), click the Generate Cover Letter button.
 - Enter the job title and company name for the position you are applying for.
