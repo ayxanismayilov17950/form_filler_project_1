@@ -1,12 +1,4 @@
-// Function to generate the cover letter using the Gemma-2 API via RapidAPI
 async function createCoverLetter(data, companyName, jobTitle) {
-    // Simple validation
-    // if (!jobTitle || !companyName) {
-    //     alert("Please enter both job title and company name.");
-    //     return;
-    // }
-  
-    // Show loading message in the textarea
     document.getElementById('cover-letter').value = "Generating cover letter... Please wait.";
   
     // Create the prompt for the API request, including applicant's background
@@ -22,7 +14,7 @@ async function createCoverLetter(data, companyName, jobTitle) {
   
     // Prepare the data for the API request
     const dataToSend = JSON.stringify({
-        model: 'gemma-2-27b',  // Model you are using
+        model: 'gemma-2-27b',  
         messages: [
             {
                 role: 'user',
